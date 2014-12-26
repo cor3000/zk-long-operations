@@ -1,6 +1,5 @@
 package zk.example.longoperations.api;
 
-import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.util.Clients;
 
 
@@ -16,8 +15,8 @@ public abstract class BusyLongOperation<INPUT, RESULT> extends UpdatableLongOper
 	}
 
 	@Override
-	protected void finish(Event event) {
+	protected void finish() {
 		Clients.clearBusy();
-		super.finish(event);
+		super.finish();
 	}
 }
