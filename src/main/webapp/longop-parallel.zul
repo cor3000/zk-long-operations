@@ -1,0 +1,18 @@
+<zk xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.zkoss.org/2005/zul"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+
+    <div apply="org.zkoss.bind.BindComposer" viewModel="@id('vm') @init('zk.example.longoperations.example.ParallelLongOperationViewModel')">
+        <button onClick="@command('startLongOperation')" label="start (click multiple times)"/>
+        <grid model="@load(vm.resultModel)" height="300px">
+        	<template name="model">
+        		<row>
+        			<cell>
+        				<label value="@load(each.name)"/>
+	        			<progressmeter value="@load(each.progress)" width="300px"/>
+        			</cell>
+        		</row>
+        	</template>
+        </grid>
+    </div>
+</zk>

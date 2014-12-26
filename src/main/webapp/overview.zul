@@ -1,0 +1,32 @@
+<zk>
+<tabbox>
+	<tabs>
+		<tab label="Simple"/>
+		<tab label="Updating Status"/>
+		<tab label="Updating Result"/>
+		<tab label="Abortable"/>
+		<tab label="Using Busy automatically"/>
+		<tab label="Parallel"/>
+	</tabs>
+	<tabpanels>
+		<tabpanel>
+			<include src="longop-simple.zul"/>
+		</tabpanel>
+		<tabpanel>
+			<include src="longop-updating-status.zul"/>
+		</tabpanel>
+		<tabpanel>
+			<include src="longop-updating-result.zul"/>
+		</tabpanel>
+		<tabpanel>
+			<include src="longop-abortable.zul"/>
+		</tabpanel>
+		<tabpanel>
+			<include src="longop-busy.zul"/>
+		</tabpanel>
+		<tabpanel>
+			<include src="longop-parallel.zul"/>
+		</tabpanel>
+	</tabpanels>
+</tabbox>
+</zk>

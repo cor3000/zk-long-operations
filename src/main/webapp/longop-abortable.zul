@@ -1,0 +1,12 @@
+<zk xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.zkoss.org/2005/zul"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+
+    <div id="abortableContainer" apply="org.zkoss.bind.BindComposer"
+         viewModel="@id('vm') @init('zk.example.longoperations.example.AbortableLongOperationViewModel')">
+        <button id="bt1" onClick="@command('startLongOperation', abortable=false)" label="start (normal)"  disabled="@load(vm.status ne 'idle')" autodisable="bt1,bt2"/>
+        <button id="bt2" onClick="@command('startLongOperation', abortable=true)" label="start (abortable)" disabled="@load(vm.status ne 'idle')" autodisable="bt1,bt2"/>
+        <button onClick="@command('abortOperation')" iconSclass="z-icon-times" visible="@load(vm.runningAbortable)"/>
+        <label value="@load(vm.status)"/>
+    </div>
+</zk>
