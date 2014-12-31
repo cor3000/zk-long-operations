@@ -15,12 +15,10 @@ import javax.xml.bind.DatatypeConverter;
 
 import org.zkoss.bind.BindUtils;
 import org.zkoss.bind.annotation.Command;
-import org.zkoss.lang.Threads;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.ListModelList;
 
 import zk.example.longoperations.api.LongOperation;
-import zk.example.longoperations.api.UpdatableLongOperation;
 
 public class UpdatingResultLongOperationViewModel {
 
@@ -31,27 +29,37 @@ public class UpdatingResultLongOperationViewModel {
     @Command
     public void startLongOperation() {
 
-        LongOperation<List<String>, Void> longOperation = new UpdatableLongOperation<List<String>, Map<String, String>, Void>() {
+    	final List<String> input = Arrays.asList("password", "secret", "telephone", "monster", "tree", "banana", "hunter", "greetings", "wares");
+    	
+        LongOperation longOperation = new LongOperation() {
 
         	private MessageDigest md5;
 
         	@Override
-        	protected Void execute(List<String> input) {
+        	protected void execute() throws InterruptedException {
         		try {
 					md5 = MessageDigest.getInstance("MD5");
 				} catch (NoSuchAlgorithmException e) {
-					Clients.showNotification("Error executing operation", Clients.NOTIFICATION_TYPE_ERROR, null, null, 1000);
-					e.printStackTrace();
-					return null;
+					throw new RuntimeException(e);
 				}
         		Queue<String> stringsToHash = new LinkedList<String>(input);
         		while(stringsToHash.peek() != null) {
         			processNext(stringsToHash, 2);
         		}
-				return null;
+				return;
             }
 
-            private void processNext(Queue<String> stringsToHash, int count) {
+        	@Override
+        	protected void onException(RuntimeException exception) {
+        		Clients.showNotification("Error executing operation: " + exception, Clients.NOTIFICATION_TYPE_ERROR, null, null, 1000);
+        	}
+        	
+        	@Override
+        	protected void onCleanup() {
+        		updateStatus("idle");
+        	}
+        	
+            private void processNext(Queue<String> stringsToHash, int count) throws InterruptedException {
             	Map<String, String> hashes = new LinkedHashMap<String, String>(count);
             	for(int i = 0; i < count; i++) {
             		String string = stringsToHash.poll();
@@ -61,22 +69,19 @@ public class UpdatingResultLongOperationViewModel {
             			break;
             		}
             	}
-           		Threads.sleep(500);
-            	update(hashes);
+           		Thread.sleep(500);
+            	updateResults(hashes);
 			}
 
 
-            @Override
-            protected void onUpdate(Map<String, String> hashes) {
+            private void updateResults(Map<String, String> hashes) throws InterruptedException {
+            	activate();
             	for (Entry<String, String> entry : hashes.entrySet()) {
             		resultModel.add(entry.getKey() + " -> " + entry.getValue());
-				}
+            	}
+            	deactivate();
             }
             
-            @Override
-            protected void onFinish(Void result) {
-            	updateStatus("idle");
-            }
 
             private String hash(String string) {
             	byte[] digest;
@@ -89,7 +94,7 @@ public class UpdatingResultLongOperationViewModel {
             }
         };
         updateStatus("processing");
-        longOperation.start(Arrays.asList("password", "secret", "telephone", "monster", "tree", "banana", "hunter", "greetings", "wares"));
+        longOperation.start();
     }
 
     private void updateStatus(String update) {

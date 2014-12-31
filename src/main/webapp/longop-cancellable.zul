@@ -1,0 +1,11 @@
+<zk xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.zkoss.org/2005/zul"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+
+    <div apply="org.zkoss.bind.BindComposer"
+         viewModel="@id('vm') @init('zk.example.longoperations.example.CancellableLongOperationViewModel')">
+        <button onClick="@command('startLongOperation')" label="start" disabled="@load(vm.running)" autodisable="self"/>
+        <button onClick="@command('cancelOperation')" iconSclass="z-icon-times" visible="@load(vm.running)"/>
+        <label value="@load(vm.status)"/>
+    </div>
+</zk>

@@ -5,11 +5,9 @@ import java.util.List;
 
 import org.zkoss.bind.BindUtils;
 import org.zkoss.bind.annotation.Command;
-import org.zkoss.lang.Threads;
 import org.zkoss.zul.ListModelList;
 
 import zk.example.longoperations.api.LongOperation;
-import zk.example.longoperations.api.UpdatableLongOperation;
 
 public class UpdatingStatusLongOperationViewModel {
 
@@ -19,33 +17,35 @@ public class UpdatingStatusLongOperationViewModel {
 	
     @Command
     public void startLongOperation() {
-        LongOperation<Integer, List<String>> longOperation = new UpdatableLongOperation<Integer, String, List<String>>() {
-        	@Override
-        	protected List<String> execute(Integer input) {
+    	
+    	final int input = 5;
+    	
+        LongOperation longOperation = new LongOperation() {
+        	private List<String> result;
+
+			@Override
+        	protected void execute() throws InterruptedException {
 				step("Validating Parameters...", 10, 100 * input);
 				step("Fetching Data ...", 40, 300 * input);
 				step("Filtering Data...", 60, 350 * input);
 				step("Updating Model...", 90, 250 * input);
-				return Arrays.asList("aaa", "bbb", "ccc");
+				result = Arrays.asList("aaa", "bbb", "ccc");
             }
 
-            private void step(String message, int progress, int duration) {
-            	update(progress+ "% - " + message);
-            	Threads.sleep(duration);
+            private void step(String message, int progress, int duration) throws InterruptedException {
+            	activate();
+            	updateStatus(progress+ "% - " + message);
+            	deactivate();
+            	Thread.sleep(duration);
 			}
 
             @Override
-            protected void onUpdate(String update) {
-            	updateStatus(update);
-            }
-            
-            @Override
-            protected void onFinish(List<String> result) {
+            protected void onFinish() {
             	resultModel.addAll(result);
             	updateStatus("idle");
             }
         };
-        longOperation.start(5);
+        longOperation.start();
     }
 
     private void updateStatus(String update) {

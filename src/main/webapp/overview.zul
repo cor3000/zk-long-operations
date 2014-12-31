@@ -4,7 +4,7 @@
 		<tab label="Simple"/>
 		<tab label="Updating Status"/>
 		<tab label="Updating Result"/>
-		<tab label="Abortable"/>
+		<tab label="Cancellable"/>
 		<tab label="Using Busy automatically"/>
 		<tab label="Parallel"/>
 	</tabs>
@@ -19,7 +19,7 @@
 			<include src="longop-updating-result.zul"/>
 		</tabpanel>
 		<tabpanel>
-			<include src="longop-abortable.zul"/>
+			<include src="longop-cancellable.zul"/>
 		</tabpanel>
 		<tabpanel>
 			<include src="longop-busy.zul"/>

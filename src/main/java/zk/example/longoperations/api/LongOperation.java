@@ -3,76 +3,155 @@ package zk.example.longoperations.api;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
-import org.zkoss.zk.ui.event.EventQueue;
-import org.zkoss.zk.ui.event.EventQueues;
+import org.zkoss.zk.ui.Desktop;
+import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.Sessions;
+import org.zkoss.zk.ui.WebApps;
+import org.zkoss.zk.ui.sys.DesktopCache;
+import org.zkoss.zk.ui.sys.DesktopCtrl;
+import org.zkoss.zk.ui.sys.WebAppCtrl;
 
-public abstract class LongOperation<INPUT, RESULT> {
-
-	private boolean abortable;
-    private AtomicBoolean aborted;
+public abstract class LongOperation implements Runnable {
+	private String desktopId;
+	private DesktopCache desktopCache;
+	private Thread thread;
+	private AtomicBoolean cancelled = new AtomicBoolean(false);
 	
-    private RESULT result;
-    private final String tempWorkingQueueName = "workingQueue" + UUID.randomUUID();
+	/**
+	 * asynchronous callback for your long operation code
+	 * @throws InterruptedException
+	 */
+	protected abstract void execute() throws InterruptedException;
 
-    public LongOperation() {}
+	/**
+	 * optional callback method when the task has completed successfully
+	 */
+	protected void onFinish() {};
+	/**
+	 * optional callback method when the task has been cancelled or was interrupted otherwise
+	 */
+	protected void onCancel() {};
+	/**
+	 * optional callback method when the task has completed with an uncaught RuntimeException
+	 * @param exception
+	 */
+	protected void onException(RuntimeException exception) {};
+	/**
+	 * optional callback method when the task has completed (always called)
+	 */
+	protected void onCleanup() {};
 
-    public LongOperation(boolean abortable) {
-        this.abortable = abortable;
-        if(abortable) {
-        	aborted = new AtomicBoolean();
-        }
+	/**
+	 * set the cancelled flag and try to interrupt the thread 
+	 */
+	public final void cancel() {
+		cancelled.set(true);
+		thread.interrupt();
+	}
+
+	/**
+	 * check the cancelled flag
+	 * @return
+	 */
+	public final boolean isCancelled() {
+		return cancelled.get();
+	}
+	
+	/**
+	 * activate the thread (and cached desktop) for UI updates
+	 * call {@link #deactivate()} once done updating the UI
+	 * @throws InterruptedException
+	 */
+	protected final void activate() throws InterruptedException {
+		Executions.activate(getDesktop());
+	}
+	
+	/**
+	 * deactivate the current active (see: {@link #activate()}) thread/desktop after updates are done
+	 */
+	protected final void deactivate() {
+		Executions.deactivate(getDesktop());
+	}
+	
+	/**
+	 * Checks if the task thread has been interrupted. Use this to check whether or not to exit a busy operation in case.  
+	 * @throws InterruptedException when the current task has been cancelled/interrupted
+	 */
+	protected final void checkCancelled() throws InterruptedException {
+		if(Thread.currentThread() != this.thread) {
+			throw new IllegalStateException("this method can only be called in the worker thread");
+		}
+		boolean interrupted = Thread.interrupted();
+		if(interrupted || cancelled.get()) {
+			cancelled.set(true);
+			throw new InterruptedException();
+		}
+	}
+	
+	/**
+	 * launch the long operation
+	 */
+	public final void start() {
+		//not caching the desktop directly to enable garbage collection, in case the desktop destroyed during the long operation
+		this.desktopId = Executions.getCurrent().getDesktop().getId();
+		this.desktopCache = ((WebAppCtrl) WebApps.getCurrent()).getDesktopCache(Sessions.getCurrent());
+		enableServerPushForThisTask();
+		thread = new Thread(this);
+		thread.start();
+	}
+
+    @Override
+    public final void run() {
+    	try {
+    		try {
+    			execute();
+    			activate();
+    			onFinish();
+    			deactivate();
+    		} catch (InterruptedException e) {
+    			try {
+    				cancelled.set(true);
+    				activate();
+    				onCancel();
+    				deactivate();
+    			} catch (InterruptedException e1) {
+    				throw new RuntimeException("interrupted onCancel handling", e1);
+    			}
+    		} catch (RuntimeException rte) {
+    			try {
+    				activate();
+    				onException(rte);
+    				deactivate();
+    			} catch (InterruptedException e1) {
+    				throw new RuntimeException("interrupted onException handling", e1);
+    			}
+    			throw rte;
+    		}
+    	} finally {
+    		try {
+    			activate();
+    			onCleanup();
+    			deactivate();
+    		} catch (InterruptedException e1) {
+    			throw new RuntimeException("interrupted onCleanup handling", e1);
+    		} finally {
+    			disableServerPushForThisTask();
+    		}
+    	}
     }
 
-    public void abort() {
-        if(!abortable) {
-            throw new IllegalStateException("Long operation is not abortable");
-        }
-        aborted.set(true);
+	private UUID taskId = UUID.randomUUID();
+
+	private void enableServerPushForThisTask() {
+		((DesktopCtrl)getDesktop()).enableServerPush(true, taskId);
+	}
+
+	private void disableServerPushForThisTask() {
+		((DesktopCtrl)getDesktop()).enableServerPush(false, taskId);
+	}
+    
+    private Desktop getDesktop() {
+        return desktopCache.getDesktop(desktopId);
     }
-
-    protected abstract RESULT execute(INPUT input);
-
-    protected abstract void onFinish(RESULT result);
-
-    public void start(final INPUT input) {
-        final EventQueue<Event> eventQueue = EventQueues.lookup(tempWorkingQueueName);
-
-        eventQueue.subscribe(new EventListener<Event>() {
-	            @Override
-	            public void onEvent(Event event) throws Exception {
-	            	result = execute(input);
-	            }
-	        }, new EventListener<Event>() {
-				@Override
-	            public void onEvent(Event event) throws Exception {
-            		finish();
-	            }
-	        });
-
-        eventQueue.publish(new Event("start"));
-    }
-
-    /**
-     * cleanup long operation here, consider overriding onFinish instead for your result processing
-     * @param tempWorkingQueueName
-     * @param event
-     */
-    protected void finish() {
-    	onFinish(result);
-    	EventQueues.remove(tempWorkingQueueName);
-    }
-
-    public boolean isAbortable() {
-        return abortable;
-    }
-
-    public boolean isAborted() {
-        if(!abortable) {
-            throw new IllegalStateException("Long operation is not abortable");
-        }
-        return aborted.get();
-    }
-
 }
+

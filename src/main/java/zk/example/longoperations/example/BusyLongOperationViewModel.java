@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.zkoss.bind.annotation.Command;
-import org.zkoss.lang.Threads;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.ListModelList;
 
@@ -17,26 +16,29 @@ public class BusyLongOperationViewModel {
 	
     @Command
     public void startLongOperation() {
+    	resultModel.clear();
+
     	Clients.showBusy("Starting Operation...");
-    	LongOperation<Integer, List<String>> longOperation = new BusyLongOperation<Integer, List<String>>() {
+    	final int numberOfItems = 5;
+    	LongOperation longOperation = new BusyLongOperation() {
+			private List<String> result;
 			@Override
-			protected List<String> execute(Integer numberOfItems) {
+			protected void execute() throws InterruptedException {
 				List<String> result = new ArrayList<String>();
 				for(int itemNo = 1; itemNo <= numberOfItems; itemNo++) {
 					showBusy("Collecting Item " + itemNo);
-					Threads.sleep(1000);
+					Thread.sleep(1000);
 					result.add("Item " + itemNo);
 				}
-				return result;
+				this.result = result;
 			}
 			
 			@Override
-			protected void onFinish(List<String> result) {
+			protected void onFinish() {
 				resultModel.addAll(result);
 			}
 		};
-        resultModel.clear();
-        longOperation.start(5);
+        longOperation.start();
     }
 
 	public ListModelList<String> getResultModel() {
