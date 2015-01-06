@@ -22,9 +22,10 @@ import zk.example.longoperations.api.LongOperation;
 
 public class UpdatingResultLongOperationViewModel {
 
+	private static final String IDLE = "idle";
+	private String status = IDLE;
+
 	private ListModelList<String> resultModel = new ListModelList<String>();
-	
-	private String status = "idle";
 	
     @Command
     public void startLongOperation() {
@@ -56,7 +57,7 @@ public class UpdatingResultLongOperationViewModel {
         	
         	@Override
         	protected void onCleanup() {
-        		updateStatus("idle");
+        		updateStatus(IDLE);
         	}
         	
             private void processNext(Queue<String> stringsToHash, int count) throws InterruptedException {

@@ -11,8 +11,8 @@ import zk.example.longoperations.api.LongOperation;
 
 public class SimpleLongOperationViewModel {
 
-	ListModelList<String> resultModel = new ListModelList<String>();
-	protected List<String> result;
+	private ListModelList<String> resultModel = new ListModelList<String>();
+	private List<String> result;
 	
     @Command
     public void startLongOperation() {

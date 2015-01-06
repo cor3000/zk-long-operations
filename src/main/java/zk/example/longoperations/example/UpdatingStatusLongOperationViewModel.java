@@ -11,9 +11,10 @@ import zk.example.longoperations.api.LongOperation;
 
 public class UpdatingStatusLongOperationViewModel {
 
-	ListModelList<String> resultModel = new ListModelList<String>();
-	
-	String status = "idle";
+	private static final String IDLE = "idle";
+	private String status = IDLE;
+
+	private ListModelList<String> resultModel = new ListModelList<String>();
 	
     @Command
     public void startLongOperation() {
@@ -42,7 +43,7 @@ public class UpdatingStatusLongOperationViewModel {
             @Override
             protected void onFinish() {
             	resultModel.addAll(result);
-            	updateStatus("idle");
+            	updateStatus(IDLE);
             }
         };
         longOperation.start();

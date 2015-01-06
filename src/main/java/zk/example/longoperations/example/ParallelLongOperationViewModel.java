@@ -8,7 +8,7 @@ import zk.example.longoperations.api.LongOperation;
 
 public class ParallelLongOperationViewModel {
 
-	ListModelList<TaskInfo> resultModel = new ListModelList<TaskInfo>();
+	private ListModelList<TaskInfo> resultModel = new ListModelList<TaskInfo>();
 	
     @Command
     public void startLongOperation() {
