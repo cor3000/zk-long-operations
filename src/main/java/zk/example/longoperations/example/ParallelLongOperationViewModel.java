@@ -8,7 +8,7 @@ import zk.example.longoperations.LongOperation;
 
 public class ParallelLongOperationViewModel {
 
-	private ListModelList<TaskInfo> resultModel = new ListModelList<TaskInfo>();
+	private ListModelList<TaskInfo> currentTasksModel = new ListModelList<TaskInfo>();
 	
     @Command
     public void startLongOperation() {
@@ -33,16 +33,16 @@ public class ParallelLongOperationViewModel {
         	
             @Override
             protected void onCleanup() {
-            	resultModel.remove(task);
+            	currentTasksModel.remove(task);
             }
         };
         
-        resultModel.add(task);
+        currentTasksModel.add(task);
 		longOperation.start();
     }
 
-	public ListModelList<TaskInfo> getResultModel() {
-		return resultModel;
+	public ListModelList<TaskInfo> getCurrentTasksModel() {
+		return currentTasksModel;
 	}
 	
 	public static class TaskInfo {
