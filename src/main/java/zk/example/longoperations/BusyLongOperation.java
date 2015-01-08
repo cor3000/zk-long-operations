@@ -1,4 +1,4 @@
-package zk.example.longoperations.api;
+package zk.example.longoperations;
 
 import org.zkoss.zk.ui.util.Clients;
 
@@ -15,5 +15,4 @@ public abstract class BusyLongOperation extends LongOperation {
 	protected void onCleanup() {
 		Clients.clearBusy();
 	}
-	
 }

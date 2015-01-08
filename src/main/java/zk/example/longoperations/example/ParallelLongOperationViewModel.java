@@ -4,7 +4,7 @@ import org.zkoss.bind.BindUtils;
 import org.zkoss.bind.annotation.Command;
 import org.zkoss.zul.ListModelList;
 
-import zk.example.longoperations.api.LongOperation;
+import zk.example.longoperations.LongOperation;
 
 public class ParallelLongOperationViewModel {
 

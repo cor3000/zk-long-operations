@@ -1,4 +1,4 @@
-package zk.example.longoperations.api;
+package zk.example.longoperations;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;

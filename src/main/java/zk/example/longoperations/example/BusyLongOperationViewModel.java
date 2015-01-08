@@ -7,8 +7,8 @@ import org.zkoss.bind.annotation.Command;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.ListModelList;
 
-import zk.example.longoperations.api.BusyLongOperation;
-import zk.example.longoperations.api.LongOperation;
+import zk.example.longoperations.BusyLongOperation;
+import zk.example.longoperations.LongOperation;
 
 public class BusyLongOperationViewModel {
 
