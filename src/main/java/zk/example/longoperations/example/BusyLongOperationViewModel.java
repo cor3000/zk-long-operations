@@ -13,12 +13,12 @@ import zk.example.longoperations.LongOperation;
 public class BusyLongOperationViewModel {
 
 	private ListModelList<String> resultModel = new ListModelList<String>();
-	
-    @Command
-    public void startLongOperation() {
-    	resultModel.clear();
-    	final int numberOfItems = 5;
-    	LongOperation longOperation = new BusyLongOperation() {
+
+	@Command
+	public void startLongOperation() {
+		resultModel.clear();
+		final int numberOfItems = 5;
+		LongOperation longOperation = new BusyLongOperation() {
 			private List<String> result;
 			@Override
 			protected void execute() throws InterruptedException {
@@ -30,7 +30,7 @@ public class BusyLongOperationViewModel {
 				}
 				this.result = result;
 			}
-			
+
 			@Override
 			protected void onFinish() {
 				resultModel.addAll(result);
@@ -38,8 +38,8 @@ public class BusyLongOperationViewModel {
 		};
 
 		Clients.showBusy("Starting Operation...");
-        longOperation.start();
-    }
+		longOperation.start();
+	}
 
 	public ListModelList<String> getResultModel() {
 		return resultModel;

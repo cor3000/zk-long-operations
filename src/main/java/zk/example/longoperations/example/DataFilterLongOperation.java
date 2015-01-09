@@ -8,7 +8,7 @@ import zk.example.longoperations.ResultLongOperation;
 public abstract class DataFilterLongOperation extends ResultLongOperation<List<String>> {
 
 	private int filterParameter;
-	
+
 	public DataFilterLongOperation(int filterParameter) {
 		super();
 		this.filterParameter = filterParameter;

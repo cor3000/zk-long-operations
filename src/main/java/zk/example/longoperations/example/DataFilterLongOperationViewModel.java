@@ -11,17 +11,17 @@ import zk.example.longoperations.LongOperation;
 public class DataFilterLongOperationViewModel {
 
 	private ListModelList<String> resultModel = new ListModelList<String>();
-    private int filterParameter = 3;
+	private int filterParameter = 3;
 
 	@Command
-    public void startLongOperation() {
-    	LongOperation longOperation = new DataFilterLongOperation(filterParameter) {
+	public void startLongOperation() {
+		LongOperation longOperation = new DataFilterLongOperation(filterParameter) {
 			@Override
 			protected void onResult(List<String> result) {
 				resultModel.clear();
 				resultModel.addAll(result);
 			}
-			
+
 			@Override
 			protected void onCleanup() {
 				Clients.clearBusy();
@@ -29,7 +29,7 @@ public class DataFilterLongOperationViewModel {
 		};
 		Clients.showBusy("started with parameter: " + filterParameter);
 		longOperation.start();
-    }
+	}
 
 	public int getFilterParameter() {
 		return filterParameter;

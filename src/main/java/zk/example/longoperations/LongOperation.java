@@ -16,7 +16,7 @@ public abstract class LongOperation implements Runnable {
 	private DesktopCache desktopCache;
 	private Thread thread;
 	private AtomicBoolean cancelled = new AtomicBoolean(false);
-	
+
 	/**
 	 * asynchronous callback for your long operation code
 	 * @throws InterruptedException
@@ -56,7 +56,7 @@ public abstract class LongOperation implements Runnable {
 	public final boolean isCancelled() {
 		return cancelled.get();
 	}
-	
+
 	/**
 	 * activate the thread (and cached desktop) for UI updates
 	 * call {@link #deactivate()} once done updating the UI
@@ -65,14 +65,14 @@ public abstract class LongOperation implements Runnable {
 	protected final void activate() throws InterruptedException {
 		Executions.activate(getDesktop());
 	}
-	
+
 	/**
 	 * deactivate the current active (see: {@link #activate()}) thread/desktop after updates are done
 	 */
 	protected final void deactivate() {
 		Executions.deactivate(getDesktop());
 	}
-	
+
 	/**
 	 * Checks if the task thread has been interrupted. Use this to check whether or not to exit a busy operation in case.  
 	 * @throws InterruptedException when the current task has been cancelled/interrupted
@@ -87,7 +87,7 @@ public abstract class LongOperation implements Runnable {
 			throw new InterruptedException();
 		}
 	}
-	
+
 	/**
 	 * launch the long operation
 	 */
@@ -100,47 +100,47 @@ public abstract class LongOperation implements Runnable {
 		thread.start();
 	}
 
-    @Override
-    public final void run() {
-    	try {
-    		try {
-    			checkCancelled(); //avoid unnecessary execution
-    			execute();
-    			checkCancelled(); //final cancelled check before calling onFinish
-    			activate();
-    			onFinish();
-    			deactivate();
-    		} catch (InterruptedException e) {
-    			try {
-    				cancelled.set(true);
-    				activate();
-    				onCancel();
-    				deactivate();
-    			} catch (InterruptedException e1) {
-    				throw new RuntimeException("interrupted onCancel handling", e1);
-    			}
-    		} catch (RuntimeException rte) {
-    			try {
-    				activate();
-    				onException(rte);
-    				deactivate();
-    			} catch (InterruptedException e1) {
-    				throw new RuntimeException("interrupted onException handling", e1);
-    			}
-    			throw rte;
-    		}
-    	} finally {
-    		try {
-    			activate();
-    			onCleanup();
-    			deactivate();
-    		} catch (InterruptedException e1) {
-    			throw new RuntimeException("interrupted onCleanup handling", e1);
-    		} finally {
-    			disableServerPushForThisTask();
-    		}
-    	}
-    }
+	@Override
+	public final void run() {
+		try {
+			try {
+				checkCancelled(); //avoid unnecessary execution
+				execute();
+				checkCancelled(); //final cancelled check before calling onFinish
+				activate();
+				onFinish();
+				deactivate();
+			} catch (InterruptedException e) {
+				try {
+					cancelled.set(true);
+					activate();
+					onCancel();
+					deactivate();
+				} catch (InterruptedException e1) {
+					throw new RuntimeException("interrupted onCancel handling", e1);
+				}
+			} catch (RuntimeException rte) {
+				try {
+					activate();
+					onException(rte);
+					deactivate();
+				} catch (InterruptedException e1) {
+					throw new RuntimeException("interrupted onException handling", e1);
+				}
+				throw rte;
+			}
+		} finally {
+			try {
+				activate();
+				onCleanup();
+				deactivate();
+			} catch (InterruptedException e1) {
+				throw new RuntimeException("interrupted onCleanup handling", e1);
+			} finally {
+				disableServerPushForThisTask();
+			}
+		}
+	}
 
 	private UUID taskId = UUID.randomUUID();
 
@@ -151,9 +151,9 @@ public abstract class LongOperation implements Runnable {
 	private void disableServerPushForThisTask() {
 		((DesktopCtrl)getDesktop()).enableServerPush(false, taskId);
 	}
-    
-    private Desktop getDesktop() {
-        return desktopCache.getDesktop(desktopId);
-    }
+
+	private Desktop getDesktop() {
+		return desktopCache.getDesktop(desktopId);
+	}
 }
 
