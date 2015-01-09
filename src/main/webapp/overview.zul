@@ -7,6 +7,7 @@
 		<tab label="Cancellable"/>
 		<tab label="Using Busy automatically"/>
 		<tab label="Parallel"/>
+		<tab label="Separate Operation from UI"/>
 	</tabs>
 	<tabpanels>
 		<tabpanel>
@@ -26,6 +27,9 @@
 		</tabpanel>
 		<tabpanel>
 			<include src="longop-parallel.zul"/>
+		</tabpanel>
+		<tabpanel>
+			<include src="longop-separate.zul"/>
 		</tabpanel>
 	</tabpanels>
 </tabbox>

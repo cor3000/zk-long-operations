@@ -79,7 +79,7 @@ public abstract class LongOperation implements Runnable {
 	 */
 	protected final void checkCancelled() throws InterruptedException {
 		if(Thread.currentThread() != this.thread) {
-			throw new IllegalStateException("this method can only be called in the worker thread");
+			throw new IllegalStateException("this method can only be called in the worker thread (i.e. during execute)");
 		}
 		boolean interrupted = Thread.interrupted();
 		if(interrupted || cancelled.get()) {
@@ -104,7 +104,9 @@ public abstract class LongOperation implements Runnable {
     public final void run() {
     	try {
     		try {
+    			checkCancelled(); //avoid unnecessary execution
     			execute();
+    			checkCancelled(); //final cancelled check before calling onFinish
     			activate();
     			onFinish();
     			deactivate();

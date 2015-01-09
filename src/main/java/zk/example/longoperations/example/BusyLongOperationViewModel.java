@@ -17,8 +17,6 @@ public class BusyLongOperationViewModel {
     @Command
     public void startLongOperation() {
     	resultModel.clear();
-
-    	Clients.showBusy("Starting Operation...");
     	final int numberOfItems = 5;
     	LongOperation longOperation = new BusyLongOperation() {
 			private List<String> result;
@@ -38,6 +36,8 @@ public class BusyLongOperationViewModel {
 				resultModel.addAll(result);
 			}
 		};
+
+		Clients.showBusy("Starting Operation...");
         longOperation.start();
     }
 

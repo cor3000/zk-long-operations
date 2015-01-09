@@ -1,0 +1,11 @@
+<zk xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.zkoss.org/2005/zul"
+    xsi:schemaLocation="http://www.zkoss.org/2005/zul http://www.zkoss.org/2005/zul/zul.xsd">
+
+    <div apply="org.zkoss.bind.BindComposer" 
+    	 viewModel="@id('vm') @init('zk.example.longoperations.example.DataFilterLongOperationViewModel')">
+        Filter Parameter (determines the duration of the operation): <intbox value="@bind(vm.filterParameter)"/>
+        <button onClick="@command('startLongOperation')" label="start"/>
+        <grid model="@load(vm.resultModel)" height="300px"/>
+    </div>
+</zk>
