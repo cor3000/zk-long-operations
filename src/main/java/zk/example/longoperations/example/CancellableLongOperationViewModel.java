@@ -37,7 +37,7 @@ public class CancellableLongOperationViewModel {
 
 			private void step(String message, int duration) throws InterruptedException {
 				//check explicitly if the task was cancelled 
-				// if cancelled it will thow an InterruptedException to stop the task
+				// if cancelled it will throw an InterruptedException to stop the task
 				checkCancelled(); 
 
 				activate(); //would throw an InterruptedException if cancelled
