@@ -35,7 +35,9 @@ public abstract class LongOperation implements Runnable {
 	 * optional callback method when the task has completed with an uncaught RuntimeException
 	 * @param exception
 	 */
-	protected void onException(RuntimeException exception) {};
+	protected void onException(RuntimeException exception) {
+		exception.printStackTrace();
+	};
 	/**
 	 * optional callback method when the task has completed (always called)
 	 */
