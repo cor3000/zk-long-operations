@@ -5,6 +5,7 @@
     <div apply="org.zkoss.bind.BindComposer" 
     	 viewModel="@id('vm') @init('zk.example.longoperationsj8.example.SimpleLongJ8OperationViewModel')">
         <button onClick="@command('startLongOperation')" label="start"/>
+        <button onClick="@command('cancelLongOperation')" label="cancel"/>
         <grid model="@load(vm.resultModel)" height="300px"/>
     </div>
 </zk>

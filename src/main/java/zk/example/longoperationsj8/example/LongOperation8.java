@@ -5,18 +5,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.zk.ui.Desktop;
 import org.zkoss.zk.ui.DesktopUnavailableException;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.sys.DesktopCtrl;
 
 public class LongOperation8<T, R> {
+	Logger LOG = LoggerFactory.getLogger(LongOperation8.class);
+	
 	private UUID taskId = UUID.randomUUID();
 	private Thread operationThread;
 	private WeakReference<Desktop> desktopRef;
+	private AtomicBoolean cancelled = new AtomicBoolean(false);
 	
 	private InterruptibleFunction<T, R> operation;
 	private Optional<Consumer<R>> onFinish = Optional.empty();
@@ -24,7 +30,7 @@ public class LongOperation8<T, R> {
 	private Optional<Runnable> onCancel = Optional.empty();
 	private Optional<Runnable> onCleanup = Optional.empty();
 	
-	public LongOperation8<T, R> doOperation(InterruptibleFunction<T, R> operation) {
+	public LongOperation8<T, R> onExecute(InterruptibleFunction<T, R> operation) {
 		this.operation = operation;
 		return this;
 	}
@@ -57,13 +63,37 @@ public class LongOperation8<T, R> {
 		operationThread.start();
 	}
 
+	public void cancel() {
+		if(cancelled.compareAndSet(false, true)) {
+			operationThread.interrupt();
+		}
+	}
+
+	/**
+	 * Checks if the task thread has been interrupted. Use this to check whether or not to exit a busy operation in case.  
+	 * @throws InterruptedException when the current task has been cancelled/interrupted
+	 */
+	protected final void checkCancelled() throws InterruptedException {
+		if(Thread.currentThread() != this.operationThread) {
+			throw new IllegalStateException("this method can only be called in the worker thread (i.e. during execute)");
+		}
+		boolean interrupted = Thread.interrupted();
+		if(interrupted || cancelled.get()) {
+			cancelled.set(true);
+			throw new InterruptedException();
+		}
+	}
+	
 	private void run(T input) {
 		List<Runnable> finalizeTasks = new ArrayList<>();
 		try{
 			try {
+				checkCancelled();
 				R result = operation.applyInterruptible(input);
+				checkCancelled();
 				onFinish.ifPresent((handler) -> finalizeTasks.add(() -> handler.accept(result)));
 			} catch (InterruptedException e) {
+				cancelled.set(true);
 				onCancel.ifPresent(finalizeTasks::add);
 			} catch (DesktopUnavailableException e) {
 				throw e;
@@ -76,9 +106,9 @@ public class LongOperation8<T, R> {
 				disableServerPushForThisTask();
 			}
 		} catch (DesktopUnavailableException e) {
-			e.printStackTrace();
+			LOG.error("Unable to finalize Long Operation: Desktop unavailable.",  e);
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error("Unexpected Exception during Long Operation.",  e);
 		}
 	}
 		
@@ -116,19 +146,7 @@ public class LongOperation8<T, R> {
 
 		B applyInterruptible(A input) throws InterruptedException; 
 	}
-
-	interface InterruptibleConsumer<A> extends Consumer<A> {
-		default void accept(A input) {
-			try {
-				acceptInterruptible(input);
-			} catch (InterruptedException e) {
-				throw new InterruptedRuntimeException(e);
-			}
-		}
-
-		void acceptInterruptible(A input) throws InterruptedException; 
-	}
-
+	
 	static class InterruptedRuntimeException extends RuntimeException {
 		private static final long serialVersionUID = 1L;
 		public InterruptedRuntimeException(InterruptedException e) {
