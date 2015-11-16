@@ -1,4 +1,4 @@
-package zk.example.longoperationsj8.example;
+package zk.example.longoperationsj8;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -77,8 +77,7 @@ public class LongOperation8<T, R> {
 		if(Thread.currentThread() != this.operationThread) {
 			throw new IllegalStateException("this method can only be called in the worker thread (i.e. during execute)");
 		}
-		boolean interrupted = Thread.interrupted();
-		if(interrupted || cancelled.get()) {
+		if(Thread.interrupted() || cancelled.get()) {
 			cancelled.set(true);
 			throw new InterruptedException();
 		}
@@ -106,7 +105,7 @@ public class LongOperation8<T, R> {
 				disableServerPushForThisTask();
 			}
 		} catch (DesktopUnavailableException e) {
-			LOG.error("Unable to finalize Long Operation: Desktop unavailable.",  e);
+			LOG.warn("Unable to finalize Long Operation: Desktop unavailable.",  e);
 		} catch (Exception e) {
 			LOG.error("Unexpected Exception during Long Operation.",  e);
 		}
