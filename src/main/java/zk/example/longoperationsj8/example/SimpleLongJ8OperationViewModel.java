@@ -9,6 +9,7 @@ import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.ListModelList;
 
 import zk.example.longoperationsj8.LongOperation8;
+import zk.example.longoperationsj8.LongOperations;
 
 public class SimpleLongJ8OperationViewModel {
 	
@@ -28,7 +29,13 @@ public class SimpleLongJ8OperationViewModel {
 		Clients.showNotification("Result coming in 6 seconds, please wait! You can cancel the operation during the first 3 seconds.", null, null, null, 2500);
 	}
 
+	@Command
+	public void startFindPerson() {
+		LongOperations.of(this::findPerson, Clients::showNotification).start((int)(Math.random() * 100));
+	}
+
 	private List<String> doExecute(Integer numRows, LongOperation8<?, ?> longOp) throws InterruptedException {
+		
 		Thread.sleep(3000); //simulate a long backend operation
 		if(Math.random() < 0.5) {
 			throw new RuntimeException("error in operation");
@@ -38,8 +45,14 @@ public class SimpleLongJ8OperationViewModel {
 		return Stream.iterate(0, (i -> ++i)).limit(numRows)
 				.map((i -> "Result " + i))
 				.collect(Collectors.toList());
+
 	}
 
+	private String findPerson(int id) throws InterruptedException {
+		Thread.sleep(1000);
+		return "Peter (" + id + ")";
+	}
+	
 	private void doCancel() {
 		Clients.showNotification("Cancelled", Clients.NOTIFICATION_TYPE_WARNING, null, null, 1000);
 	}

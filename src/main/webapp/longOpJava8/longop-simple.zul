@@ -7,5 +7,7 @@
         <button onClick="@command('startLongOperation')" label="start"/>
         <button onClick="@command('cancelLongOperation')" label="cancel"/>
         <grid model="@load(vm.resultModel)" height="300px"/>
+
+        <button onClick="@command('startFindPerson')" label="find person"/>
     </div>
 </zk>

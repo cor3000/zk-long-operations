@@ -36,22 +36,22 @@ public class LongOperation8<T, R> {
 	}
 
 	public LongOperation8<T, R> onFinish(Consumer<R> onFinish) {
-		this.onFinish = Optional.of(onFinish);
+		this.onFinish = Optional.ofNullable(onFinish);
 		return this;
 	}
 
 	public LongOperation8<T, R> onCancel(Runnable onCancel) {
-		this.onCancel = Optional.of(onCancel);
+		this.onCancel = Optional.ofNullable(onCancel);
 		return this;
 	}
 
 	public LongOperation8<T, R> onCleanup(Runnable onCleanup) {
-		this.onCleanup = Optional.of(onCleanup);
+		this.onCleanup = Optional.ofNullable(onCleanup);
 		return this;
 	}
 
 	public LongOperation8<T, R> onException(Consumer<Throwable> onException) {
-		this.onException = Optional.of(onException);
+		this.onException = Optional.ofNullable(onException);
 		return this;
 	}
 
@@ -134,7 +134,7 @@ public class LongOperation8<T, R> {
 		return Optional.ofNullable(desktopRef.get()).orElseThrow(DesktopUnavailableException::new);
 	}
 
-	interface InterruptibleFunction<A, B> extends Function<A, B> {
+	public static interface InterruptibleFunction<A, B> extends Function<A, B> {
 		default B apply(A input) {
 			try {
 				return applyInterruptible(input);
