@@ -111,34 +111,37 @@ public abstract class LongOperation implements Runnable {
 				checkCancelled(); //final cancelled check before calling onFinish
 				activate();
 				onFinish();
-				deactivate();
 			} catch (InterruptedException e) {
 				try {
 					cancelled.set(true);
 					activate();
 					onCancel();
-					deactivate();
 				} catch (InterruptedException e1) {
 					throw new RuntimeException("interrupted onCancel handling", e1);
+				} finally {
+					deactivate();
 				}
 			} catch (RuntimeException rte) {
 				try {
 					activate();
 					onException(rte);
-					deactivate();
 				} catch (InterruptedException e1) {
 					throw new RuntimeException("interrupted onException handling", e1);
+				} finally {
+					deactivate();
 				}
 				throw rte;
+			} finally {
+				deactivate();
 			}
 		} finally {
 			try {
 				activate();
 				onCleanup();
-				deactivate();
 			} catch (InterruptedException e1) {
 				throw new RuntimeException("interrupted onCleanup handling", e1);
 			} finally {
+				deactivate();
 				disableServerPushForThisTask();
 			}
 		}
