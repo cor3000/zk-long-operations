@@ -8,29 +8,28 @@ import org.zkoss.bind.annotation.Command;
 import org.zkoss.zk.ui.util.Clients;
 import org.zkoss.zul.ListModelList;
 
-import zk.example.longoperationsj8.LongOperation8;
-import zk.example.longoperationsj8.LongOperations;
-import zk.example.longoperationsj8.LongOperations.LongOperationsBuilder;
+import zk.example.longoperations.java8.LongOperation;
+import zk.example.longoperations.java8.LongOperationBuilder;
+import zk.example.longoperations.java8.LongOperations;
 
 public class SimpleLongJ8OperationViewModel {
 	
 	private ListModelList<String> resultModel = new ListModelList<String>();
-	private LongOperation8<Integer, List<String>> longOp;
+	private LongOperation<Integer, List<String>> longOp;
 
 	@Command
 	public void startLongOperation() {
-		longOp = new LongOperation8<Integer, List<String>>()
-				.onExecute((numRows) -> {return doExecute(numRows, longOp);})
+		longOp = LongOperations.of((Integer numRows) -> {return doExecute(numRows, longOp);})
 				.onFinish(resultModel::addAll)
 				.onCancel(this::doCancel)
 				.onException(this::doError)
-				.onCleanup(this::doCleanup);
+				.onCleanup(this::doCleanup).build();
 		longOp.start(5);
 		
 		Clients.showNotification("Result coming in 6 seconds, please wait! You can cancel the operation during the first 3 seconds.", null, null, null, 2500);
 	}
 
-	private List<String> doExecute(Integer numRows, LongOperation8<?, ?> longOp) throws InterruptedException {
+	private List<String> doExecute(Integer numRows, LongOperation<?, ?> longOp) throws InterruptedException {
 		
 		Thread.sleep(3000); //simulate a long backend operation
 		if(Math.random() < 0.5) {
@@ -49,13 +48,17 @@ public class SimpleLongJ8OperationViewModel {
 //		LongOperations.of(this::findPerson, Clients::showNotification).start((int)(Math.random() * 100));
 //		LongOperation8<Integer, String> start = LongOperations.of(this::findPerson).onFinish(Clients::showNotification)
 //			.start(300);
-		LongOperationsBuilder<Integer, String> myOp = LongOperations.of(this::findPerson).onFinish(System.out::println);
-		myOp.start(300);
-		myOp.start(50000);
+		LongOperationBuilder<Integer, String> builder;
+		builder = LongOperations.of(this::findPerson).onFinish(System.out::println);
+
+		builder.start(300);
+		builder.start(1300);
+		builder.start(3300);
+		builder.start(5000);
 	}
 	
 	private String findPerson(int id) throws InterruptedException {
-		Thread.sleep(1000);
+		Thread.sleep(id);
 		return "Peter (" + id + ")";
 	}
 	
