@@ -59,9 +59,7 @@ public class LongOperation<T, R> {
 		if(!started.compareAndSet(false, true)) {
 			throw new IllegalStateException("Long operation already started");
 		}
-		
 		this.desktopRef = new WeakReference<Desktop>(Executions.getCurrent().getDesktop());
-
 		enableServerPushForThisTask();
 		operationThread = new Thread(() -> {run(input);});
 		operationThread.start();
