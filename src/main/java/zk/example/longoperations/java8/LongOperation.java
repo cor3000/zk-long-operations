@@ -86,24 +86,24 @@ public class LongOperation<T, R> {
 	}
 	
 	private void run(T input) {
-		List<Runnable> finalizeTasks = new ArrayList<>();
+		List<Optional<Runnable>> finalizeTasks = new ArrayList<>();
 		try{
 			try {
 				checkCancelled();
 				R result = operation.applyInterruptible(input);
 				checkCancelled();
-				onFinish.ifPresent((handler) -> finalizeTasks.add(() -> handler.accept(result)));
+				finalizeTasks.add(onFinish.map(fin -> () -> fin.accept(result)));
 			} catch (InterruptedException e) {
 				cancelled.set(true);
-				onCancel.ifPresent(finalizeTasks::add);
+				finalizeTasks.add(onCancel);
 			} catch (DesktopUnavailableException e) {
 				throw e;
 			} catch (Exception e) {
 				onException.orElseThrow(() -> e);
-				finalizeTasks.add(() -> onException.get().accept(e));
+				finalizeTasks.add(onException.map(exc -> () -> exc.accept(e)));
 			} finally {
-				onCleanup.ifPresent(finalizeTasks::add);
-				doActivated(() -> finalizeTasks.forEach(Runnable::run));
+				finalizeTasks.add(onCleanup);
+				doActivated(() -> finalizeTasks.forEach(task -> task.ifPresent(Runnable::run)));
 				disableServerPushForThisTask();
 			}
 		} catch (DesktopUnavailableException e) {
